@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { UserRoutes } from "./module/User/user.route.js";
 
 const app = express();
@@ -21,21 +21,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // Root route with Postman reference
 app.get("/", (_req: Request, res: Response) => {
-  res.json({
-    status: "ok",
-    message: "User CRUD API is running!",
-    endpoints: {
-      createUser: "POST   http://localhost:5000/api/users (or /api/v1/users)",
-      getAllUsers: "GET    http://localhost:5000/api/users (or /api/v1/users)",
-      getUserById: "GET    http://localhost:5000/api/users/:id",
-      updateUser: "PATCH  http://localhost:5000/api/users/:id (or PUT)",
-      deleteUser: "DELETE http://localhost:5000/api/users/:id",
-    },
-    sampleCreatePayload: {
-      name: "John Doe",
-      email: "john@example.com",
-    },
-  });
+  res.json("server working well")
 });
 
 // Application Routes
@@ -54,12 +40,31 @@ app.use((req: Request, res: Response) => {
 // Global Error Handler
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error("Global Error Handler:", err);
-  const errorMessage = err instanceof Error ? err.message : "Internal Server Error";
 
-  res.status(500).json({
+  const customError = err as { statusCode?: number; message?: string };
+  const statusCode = customError.statusCode || 500;
+  const message = customError.message || (err instanceof Error ? err.message : "Internal Server Error");
+
+  // Detect MongoDB authentication or connection issues
+  if (
+    message.includes("AuthenticationFailed") ||
+    message.includes("SCRAM failure") ||
+    message.includes("bad auth") ||
+    message.includes("<db_username>")
+  ) {
+    res.status(500).json({
+      success: false,
+      statusCode: 500,
+      message: "Database Authentication Error: Please ensure DATABASE_URL in your .env contains valid MongoDB username and password.",
+      error: message,
+    });
+    return;
+  }
+
+  res.status(statusCode).json({
     success: false,
-    statusCode: 500,
-    message: errorMessage,
+    statusCode,
+    message,
   });
 });
 

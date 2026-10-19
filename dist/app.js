@@ -47,11 +47,26 @@ app.use((req, res) => {
 // Global Error Handler
 app.use((err, _req, res, _next) => {
     console.error("Global Error Handler:", err);
-    const errorMessage = err instanceof Error ? err.message : "Internal Server Error";
-    res.status(500).json({
+    const customError = err;
+    const statusCode = customError.statusCode || 500;
+    const message = customError.message || (err instanceof Error ? err.message : "Internal Server Error");
+    // Detect MongoDB authentication or connection issues
+    if (message.includes("AuthenticationFailed") ||
+        message.includes("SCRAM failure") ||
+        message.includes("bad auth") ||
+        message.includes("<db_username>")) {
+        res.status(500).json({
+            success: false,
+            statusCode: 500,
+            message: "Database Authentication Error: Please ensure DATABASE_URL in your .env contains valid MongoDB username and password.",
+            error: message,
+        });
+        return;
+    }
+    res.status(statusCode).json({
         success: false,
-        statusCode: 500,
-        message: errorMessage,
+        statusCode,
+        message,
     });
 });
 export default app;
