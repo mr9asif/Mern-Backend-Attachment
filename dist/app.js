@@ -1,5 +1,5 @@
 import express from "express";
-import { UserRoutes } from "./module/User/user.route.js";
+import { UserRoutes } from "./modules/User/user.route.js";
 const app = express();
 // Middlewares
 app.use(express.json());
@@ -17,21 +17,7 @@ app.use((req, res, next) => {
 });
 // Root route with Postman reference
 app.get("/", (_req, res) => {
-    res.json({
-        status: "ok",
-        message: "User CRUD API is running!",
-        endpoints: {
-            createUser: "POST   http://localhost:5000/api/users (or /api/v1/users)",
-            getAllUsers: "GET    http://localhost:5000/api/users (or /api/v1/users)",
-            getUserById: "GET    http://localhost:5000/api/users/:id",
-            updateUser: "PATCH  http://localhost:5000/api/users/:id (or PUT)",
-            deleteUser: "DELETE http://localhost:5000/api/users/:id",
-        },
-        sampleCreatePayload: {
-            name: "John Doe",
-            email: "john@example.com",
-        },
-    });
+    res.json("server working well");
 });
 // Application Routes
 app.use("/api/v1/users", UserRoutes);

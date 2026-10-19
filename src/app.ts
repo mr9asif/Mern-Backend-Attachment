@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import { UserRoutes } from "./module/User/user.route.js";
+import { UserRoutes } from "./modules/User/user.route.js";
 
 const app = express();
 
